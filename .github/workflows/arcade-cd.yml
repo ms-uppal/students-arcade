@@ -1,0 +1,52 @@
+# The name displayed in the GitHub Actions tab.
+name: Arcade CD
+
+# Run delivery after a change reaches the main branch.
+on:
+  push:
+    branches: [main]
+  # Allow an instructor or student to start delivery manually.
+  workflow_dispatch:
+
+jobs:
+  package-arcade:
+    name: Package Students Arcade
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download the repository files onto the runner.
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # Install Python so the launcher can be verified before packaging.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Confirm that the source code can be compiled.
+      - name: Check Python syntax
+        run: python -m compileall -q .
+
+      # Run the launcher and save its output as evidence.
+      - name: Verify the Arcade launcher
+        run: timeout 20s python main.py > run-log.txt
+
+      # Create a clean release directory.
+      - name: Prepare release folder
+        run: |
+          mkdir -p arcade-release/plugins
+          cp main.py README.md run-log.txt arcade-release/
+          cp -r plugins/* arcade-release/plugins/
+          if [ -f requirements.txt ]; then cp requirements.txt arcade-release/; fi
+
+      # Compress the release directory.
+      - name: Create release ZIP
+        run: zip -r students-arcade-release.zip arcade-release
+
+      # Store the ZIP so it can be downloaded from the workflow run.
+      - name: Upload Arcade artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: students-arcade-release
+          path: students-arcade-release.zip
