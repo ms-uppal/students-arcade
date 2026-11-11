@@ -1,1 +1,39 @@
+name: Arcade Docker Smoke Test
+
+on:
+  push:
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'main.py'
+      - 'plugins/**/*.py'
+      - 'requirements.txt'
+      - '.github/workflows/arcade-docker-smoke.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'main.py'
+      - 'plugins/**/*.py'
+      - 'requirements.txt'
+      - '.github/workflows/arcade-docker-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  docker-smoke-test:
+    name: Build and run Arcade container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t students-arcade:ci .
+
+      - name: Run Arcade container
+        run: timeout 20s docker run --rm students-arcade:ci
+
+      - name: Show image details
+        run: docker image ls students-arcade
 
