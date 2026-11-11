@@ -18,5 +18,4 @@ COPY main.py ./
 COPY plugins ./plugins
 
 # Start the existing Arcade launcher when the container runs.
-# CMD ["python", "main.py"]
-CMD ["python", "missing.py"]
+CMD ["python", "main.py"]
